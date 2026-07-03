@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+
+# Model artifacts / outputs
+*.pt
+*.pth
+*.bin
+*.ckpt
+outputs/
+eap_outputs/
+checkpoints/
+wandb/
+
+# Data
+*.csv
+data/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
