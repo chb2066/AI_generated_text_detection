@@ -1,11 +1,11 @@
 # AI Generated Text Detection
 
-한국어 문서가 AI(생성형 언어모델)에 의해 작성되었는지 여부를 예측하는 **Multiple Instance Learning(MIL) 기반 문서 분류 모델** 두 가지 구현을 제공합니다. 두 모델 모두 문서를 문단(paragraph) 단위로 나누어 인코딩한 뒤 문서 레벨 예측으로 집계(aggregate)하는 방식을 사용하지만, 집계와 예측 단계를 처리하는 순서가 다릅니다.
+한국어 문서가 AI에 의해 작성되었는지 여부를 예측하는 Multiple Instance Learning(MIL) 기반 문서 분류 모델 두 가지 구현을 제공합니다. 두 모델 모두 문서를 문단 단위로 나누어 인코딩한 뒤 문서 레벨 예측으로 집계하는 방식을 사용하지만, 집계와 예측 단계를 처리하는 순서가 다릅니다.
 
 | 파일 | 모델 | 처리 흐름 |
 |---|---|---|
-| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed → **P**redict(문단별) → Aggregate → Predict(문서 레벨) |
-| [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed → **A**ggregate → Predict(문서 레벨) |
+| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed → Predict(문단별) → Aggregate → Predict(문서 레벨) |
+| [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed → Aggregate → Predict(문서 레벨) |
 
 ## 개요
 
