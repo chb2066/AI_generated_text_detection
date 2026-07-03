@@ -1,20 +1,25 @@
 # AI Generated Text Detection
 
-한국어 문서가 AI에 의해 작성되었는지 여부를 예측하는 Multiple Instance Learning(MIL) 기반 문서 분류 모델 두 가지 구현을 제공합니다. 두 모델 모두 문서를 문단 단위로 나누어 인코딩한 뒤 문서 레벨 예측으로 집계하는 방식을 사용하지만, 집계와 예측 단계를 처리하는 순서가 다릅니다.
+> **2025 SW중심대학 디지털 경진대회 (AI부문) — 생성형 AI(LLM)와 인간: 텍스트 판별 챌린지**
+> 주최: SW중심대학협의회 · 진행: DACON · 팀 프로젝트
+
+문단 단위로 주어진 한국어 텍스트가 사람이 작성한 것(0)인지 생성형 AI가 작성한 것(1)인지 판별하여, 각 문단이 AI가 작성했을 확률(0~1)을 예측하는 과제입니다. 평가 데이터는 문단 단위 샘플로 구성되며, 같은 `title`을 가진 문단들은 하나의 글에 속하므로 **동일 글 내 문단 간 상호 참조가 허용**됩니다.
+
+이 저장소는 해당 과제를 **Multiple Instance Learning(MIL)** 문제로 접근합니다. 같은 글에 속한 문단들을 하나의 bag으로 묶어 문서 레벨로 인코딩·집계함으로써, 대회 규칙이 허용하는 "동일 글 내 문단 간 상호 참조"를 자연스럽게 활용합니다. 두 모델 모두 문서를 문단 단위로 나누어 인코딩한 뒤 문서 레벨 예측으로 집계하지만, 집계와 예측 단계를 처리하는 순서가 다릅니다.
 
 | 파일 | 모델 | 처리 흐름 |
 |---|---|---|
-| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed(문단별) → Predict(문단별) → Aggregate |
-| [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed(문단별) → Aggregate → Predict(문서 레벨) |
+| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed → Predict(문단별) → Aggregate |
+| [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed → Aggregate → Predict(문서 레벨) |
 
 ## 개요
 
 - **백본**: HuggingFace `transformers`의 한국어 사전학습 모델 (기본값 `klue/bert-base`, CLI에서 `klue/roberta-large` 등으로 변경 가능)
-- **입력 단위**: 문서를 줄바꿈(`\n`) 기준으로 문단으로 분할한 뒤, 문단별로 토크나이즈하여 MIL 형태로 모델에 입력
+- **입력 단위**: 문서를 줄바꿈(`\n`) 기준으로 문단으로 분할한 뒤, 문단별로 토크나이즈하여 MIL 형태(bag of paragraphs)로 모델에 입력
 - **손실 함수**: Focal Loss + differentiable AUC Loss를 결합한 `FocalAUCLoss`로 클래스 불균형과 ROC-AUC 최적화를 동시에 다룸
-- **보정(Calibration)**: 검증 데이터 기반 Temperature Scaling으로 예측 확률의 overconfidence을 완화하고 Expected Calibration Error를 관리
-- **분산 학습**: `torch.distributed` + `DDP` 기반 멀티 GPU 학습, AMP 지원
-- **예측**: 단일 GPU에서 보정된 확률과 confidence score를 함께 출력
+- **보정(Calibration)**: 검증 데이터 기반 Temperature Scaling으로 예측 확률의 과신(overconfidence)을 완화하고 Expected Calibration Error(ECE)를 관리
+- **분산 학습**: `torch.distributed` + `DistributedDataParallel(DDP)` 기반 멀티 GPU 학습, Mixed Precision(AMP) 지원
+- **예측**: 단일 GPU에서 보정된 확률과 신뢰도(confidence) 점수를 함께 출력
 
 ### EPA.py — EPA-MIL
 
@@ -44,17 +49,27 @@ CUDA 지원 GPU와 [PyTorch의 CUDA 빌드](https://pytorch.org/get-started/loca
 
 | 컬럼 | 설명 |
 |---|---|
-| `full_text` | 문서 전체 텍스트 |
 | `title` | 문서 제목 |
+| `full_text` | 문서 전체 텍스트 |
 | `generated` | 라벨 (0: 사람 작성, 1: AI 생성) |
 
 **테스트 데이터 (`--test_file`, CSV)**
 
 | 컬럼 | 설명 |
 |---|---|
-| `ID` | 문서 식별자 |
-| `title` | 문서 제목 |
-| `paragraph_text` | 예측 대상 텍스트 |
+| `ID` | 문단(샘플) 식별자 |
+| `title` | 문서 제목 (같은 `title`은 하나의 글에 속함) |
+| `paragraph_index` | 글 내 문단 순서 |
+| `paragraph_text` | 예측 대상 문단 텍스트 |
+
+> 코드는 문단 텍스트(`paragraph_text`)와 `title`, `ID`를 사용합니다. `paragraph_index`는 파일에 포함되지만 학습/추론에는 직접 사용하지 않습니다.
+
+**제출 파일 (`submission.csv`)**
+
+| 컬럼 | 설명 |
+|---|---|
+| `ID` | 문단(샘플) 식별자 |
+| `generated` | 예측 확률 (0~1) |
 
 ## 사용법
 
@@ -111,4 +126,4 @@ python EAP.py \
 
 ## 라이선스
 
-별도 명시가 없는 한 저장소 소유자에게 저작권이 있습니다.
+이 저장소의 코드는 [MIT License](LICENSE)를 따릅니다. 단, 사용하는 사전학습 모델(`klue/bert-base`, `klue/roberta-large` 등)과 대회 데이터는 각 출처의 라이선스 및 이용약관을 따릅니다.
