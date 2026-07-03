@@ -4,17 +4,17 @@
 
 | 파일 | 모델 | 처리 흐름 |
 |---|---|---|
-| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed → Predict(문단별) → Aggregate → Predict(문서 레벨) |
+| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed → Predict(문단별) → Aggregate |
 | [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed → Aggregate → Predict(문서 레벨) |
 
 ## 개요
 
 - **백본**: HuggingFace `transformers`의 한국어 사전학습 모델 (기본값 `klue/bert-base`, CLI에서 `klue/roberta-large` 등으로 변경 가능)
-- **입력 단위**: 문서를 줄바꿈(`\n`) 기준으로 문단으로 분할한 뒤, 문단별로 토크나이즈하여 MIL 형태(bag of paragraphs)로 모델에 입력
+- **입력 단위**: 문서를 줄바꿈(`\n`) 기준으로 문단으로 분할한 뒤, 문단별로 토크나이즈하여 MIL 형태로 모델에 입력
 - **손실 함수**: Focal Loss + differentiable AUC Loss를 결합한 `FocalAUCLoss`로 클래스 불균형과 ROC-AUC 최적화를 동시에 다룸
-- **보정(Calibration)**: 검증 데이터 기반 Temperature Scaling으로 예측 확률의 과신(overconfidence)을 완화하고 Expected Calibration Error(ECE)를 관리
-- **분산 학습**: `torch.distributed` + `DistributedDataParallel(DDP)` 기반 멀티 GPU 학습, Mixed Precision(AMP) 지원
-- **예측**: 단일 GPU에서 보정된 확률과 신뢰도(confidence) 점수를 함께 출력
+- **보정(Calibration)**: 검증 데이터 기반 Temperature Scaling으로 예측 확률의 overconfidence을 완화하고 Expected Calibration Error를 관리
+- **분산 학습**: `torch.distributed` + `DDP` 기반 멀티 GPU 학습, AMP 지원
+- **예측**: 단일 GPU에서 보정된 확률과 confidence score를 함께 출력
 
 ### EPA.py — EPA-MIL
 
