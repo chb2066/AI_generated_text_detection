@@ -4,8 +4,8 @@
 
 | 파일 | 모델 | 처리 흐름 |
 |---|---|---|
-| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed → Predict(문단별) → Aggregate |
-| [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed → Aggregate → Predict(문서 레벨) |
+| [EPA.py](EPA.py) | EPA-MIL (`ImprovedEPAMILModel`) | Embed(문단별) → Predict(문단별) → Aggregate |
+| [EAP.py](EAP.py) | EAP-MIL (`EAPModel`) | Embed(문단별) → Aggregate → Predict(문서 레벨) |
 
 ## 개요
 
