@@ -1,6 +1,6 @@
 # AI Generated Text Detection
 
-> **2025 SW중심대학 디지털 경진대회 (AI부문) — 생성형 AI(LLM)와 인간: 텍스트 판별 챌린지**
+> **2025 SW중심대학 디지털 경진대회 (AI부문) - 생성형 AI(LLM)와 인간: 텍스트 판별 챌린지**
 > 
 > 주최: SW중심대학협의회 · 진행: DACON · 팀 프로젝트
 
@@ -22,13 +22,13 @@
 - **분산 학습**: `torch.distributed` + `DistributedDataParallel(DDP)` 기반 멀티 GPU 학습, Mixed Precision(AMP) 지원
 - **예측**: 단일 GPU에서 보정된 확률과 신뢰도(confidence) 점수를 함께 출력
 
-### EPA.py — EPA-MIL
+### EPA.py - EPA-MIL
 
 - 문단 레벨 분류기와 문서 레벨 분류기를 모두 학습 (`doc_loss + lambda_paragraph * para_loss`)
 - 문단 레벨 로짓으로 top-k 문단을 선택한 뒤 Multi-head Self-Attention으로 어그리게이션
 - 스케줄러: `CosineAnnealingWarmRestarts`
 
-### EAP.py — EAP-MIL
+### EAP.py - EAP-MIL
 
 - 문서 레벨 손실만 학습 (문단별 예측 헤드 없음)
 - 문단 임베딩의 norm 기반 중요도로 top-k 필터링 후 `mean` / `max` / `attention` / `weighted_attention` 중 선택 가능한 방식으로 어그리게이션
